@@ -1,33 +1,57 @@
 # Cluster wrapper for move
 ## Problem
-We want to abstract away cluster submission system, for any command, for hyper parameter sweep. 
+We want to abstract away the cluster submission system for any command and hyperparameter sweeps. 
 
-## Usage
-There are two usages. 
-1. submit any single command from CLI.
+## Installation
 ```
-python -m move_utils.move_wrapper [--sl_time 1  --sl_ngpu 1] [YOUR CMD]
+pip install -e .
 ```
 
-Toy example
+## Usage 1: any command wrapper via CLI 
+1. Submit any single command from CLI.
+```
+python -m move_utils.slurm_wrapper [--sl_time_hr 1  --sl_ngpu 0] [YOUR CMD]
+```
+
+Toy example: (removing `--slurm` simply runs the job locally)
 
 ```
-python -m move_utils.move_wrapper [--sl_time 1  --sl_ngpu 1] bash 
+python -m move_utils.slurm_wrapper [--sl_time_hr 1  --sl_ngpu 0] --slurm  python example/hello.py
 ```
 
 
-2. hyperparam sweep in python script with the help of hydra
+
+## Usage 2: Hyperparameter sweep within Python 
+What we want to achieve: 
+
+1. On your local machine, debug as usual.
+```
+python hello.py -m a=hello b=world
+```
+
+2. When you are ready to launch a job on the cluster and sweep hyperparameters, simply add +engine=move at the end of your command.
 
 ```
-inside of your `main.py` 
-@hydra.main()
-@move_utils.slurm_engine()
-def main(cfg)
+python hello.py -m a=hello,bye b=world,sam,tom +engine=move
+```
+This should submit 2x3 = 6 jobs to the cluster.
+
+---
+
+If you'd like to have this feature for your codebase, all you need to do in your code is to 
+- Use Hydra as your config tool.
+- Create `engine/move.yaml` under your Hydra config path. 
+- Add `@slurm_engine()` below `@hydra.main()`
+
+```
+import hydra
+from move_utils.slurm_utils import slurm_engine
+
+@hydra.main(config_path="configs", config_name="hello", version_base=None)
+@slurm_engine()
+def main(cfg):
     # do something
+    return 
 ```
 
-In command line:
-```
-cd examples
-python -m hello_no_torch [+engine=move] 
-```
+For a complete yet simple example, please see `examples/hello.py`. 

@@ -5,3 +5,4 @@ outputs/
 multirun/
 *.pyc
 logs/
+*.txt

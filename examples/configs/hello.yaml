@@ -1,5 +1,5 @@
 
-
+# in your hydra config, you need to always specify these 3 fields in order for the slurm wrapper to work
 expname: ${a}_${b}
 exp_dir: outputs/${expname}
 ngpu: 0
