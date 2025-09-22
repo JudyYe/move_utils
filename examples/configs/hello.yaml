@@ -1,0 +1,8 @@
+
+
+expname: ${a}_${b}
+exp_dir: outputs/${expname}
+ngpu: 0
+
+a: 1
+b: kkk
